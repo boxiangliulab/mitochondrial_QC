@@ -335,11 +335,27 @@ library(GSA)
 boxallc2[,"CG_number"] = comp_gene_info2[,'ANNOTATION_SYMBOL'][match(boxallc2[,'Accession'], comp_gene_info2[,'Accession'])]
 kegg <- GSA.read.gmt("~/Desktop/FYP/GSEA/new_Drosophila_KEGG.gmt")
 mtor = unlist(k$genesets[which(k$geneset.names == "mTOR signaling pathway")])[1:100]
-mtor_gene_before_remove = mtor[sapply(mtor, function(x) x %in% boxallc2$CG_number)]
+mtor_gene_before_remove_na = mtor[sapply(mtor, function(x) x %in% boxallc2$CG_number)]
+genesymbol1 = comp_gene_info2$`Gene Symbol`[match(mtor_gene_before_remove_na, comp_gene_info2$ANNOTATION_SYMBOL)]
+df_mtor_in_boxallc2 = data.frame(mtor_gene = mtor_gene_before_remove_na, gene_symbol = genesymbol1)
+mtor_gene_not_in_boxallc2 = mtor[sapply(mtor, function(x) !(x %in% boxallc2$CG_number))]
+write.csv(df_mtor_in_boxallc2, file = 'mtor genes in boxallc2 before NA removal.csv')
+# genesymbol2 = comp_gene_info2$`Gene Symbol`[match(mtor_gene_not_in_boxallc2, comp_gene_info2$ANNOTATION_SYMBOL)]
+# df_mtor_not_in_boxallc2 = data.frame(mtor_gene = mtor_gene_not_in_boxallc2, gene_symbol = genesymbol2)
 
 ##Check final against new KEGG mtor signalling pathway
 colnames(final)[1] = 'Accession'
-final[,"CG_number"] = comp_gene_info2[,'ANNOTATION_SYMBOL'][match(final[,'Accession'], comp_gene_info2[,'Accession'])]
+final = as.data.frame(final)
+final$CG_number = NA
+final$CG_number = comp_gene_info2[,'ANNOTATION_SYMBOL'][match(final[,'Accession'], comp_gene_info2[,'Accession'])]
+mtor_gene_after_remove_na = mtor[sapply(mtor, function(x) x %in% final$CG_number)]
+genesymbol2 = comp_gene_info2$`Gene Symbol`[match(mtor_gene_after_remove_na, comp_gene_info2$ANNOTATION_SYMBOL)]
+df_mtor_after_remove_na = data.frame(mtor_gene = mtor_gene_after_remove_na, gene_symbol = genesymbol2)
+mtor_gene_removed = mtor_gene_before_remove_na[!(mtor_gene_before_remove_na %in% mtor_gene_after_remove_na)]
+genesymbol3 = comp_gene_info2$`Gene Symbol`[match(mtor_gene_removed, comp_gene_info2$ANNOTATION_SYMBOL)]
+df_mtor_removed = data.frame(mtor_gene = mtor_gene_removed, gene_symbol = genesymbol3)
+write.csv(df_mtor_after_remove_na, file = 'mtor genes in final after NA removal.csv')
+write.csv(df_mtor_removed, file = 'mtor genes removed.csv')
 
 #####Preparation for GSEA Analysis
 
