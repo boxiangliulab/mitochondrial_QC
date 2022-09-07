@@ -239,9 +239,9 @@ for (i in seq(1,length(treatname))){   #parse treatname
 }
 
 
-#Remove mitochondrial genome
-comp_gene_info2 = as.data.frame(comp_gene_info2);
-gene_no_mito = comp_gene_info2[which(comp_gene_info2$LOCATION_ARM != "mitochondrion_genome"),]
+# #Remove mitochondrial genome
+# comp_gene_info2 = as.data.frame(comp_gene_info2);
+# gene_no_mito = comp_gene_info2[which(comp_gene_info2$LOCATION_ARM != "mitochondrion_genome"),]
 
 #####Manhattan plot 
 ##Manhattan plot with P Value
@@ -326,10 +326,21 @@ for (i in 1:6) {
   gseafile = cbind(BatchRemoveWithoutControl[, c('CG.number', 'Description')],BatchRemoveWithoutControl[,1:4],BatchRemoveWithoutControl[, treatment[(3*i-2):(3*i)]])
   gseafile = gseafile[,-3]
   colnames(gseafile)[c(1,2)] = c("NAME", "DESCRIPTION")
-  write.table(gseafile, file = paste0('MHC_W vs ', unlist(strsplit(treatment[3*i], split='_0', fixed=TRUE)[1], ".txt")), append = FALSE, sep = " ", dec = ".",
-              row.names = FALSE)
+  write.table(gseafile, paste0('MHC_W vs ', unlist(strsplit(treatment[3*i], split='_0', fixed=TRUE))[1], " GSEA.txt"), append = FALSE, sep = "\t", dec = ".",
+              row.names = FALSE, quote = FALSE)
 }
-# file = paste('MHC/W', unlist(strsplit(treatment[3*i], split='_', fixed=TRUE))[1:3], ' csv.')
+
+##Check boxallnor against new KEGG mtor signalling pathway
+library(GSA)
+boxallc2[,"CG_number"] = comp_gene_info2[,'ANNOTATION_SYMBOL'][match(boxallc2[,'Accession'], comp_gene_info2[,'Accession'])]
+kegg <- GSA.read.gmt("~/Desktop/FYP/GSEA/new_Drosophila_KEGG.gmt")
+mtor = unlist(k$genesets[which(k$geneset.names == "mTOR signaling pathway")])[1:100]
+mtor_gene_before_remove = mtor[sapply(mtor, function(x) x %in% boxallc2$CG_number)]
+
+##Check final against new KEGG mtor signalling pathway
+colnames(final)[1] = 'Accession'
+final[,"CG_number"] = comp_gene_info2[,'ANNOTATION_SYMBOL'][match(final[,'Accession'], comp_gene_info2[,'Accession'])]
+
 #####Preparation for GSEA Analysis
 
 setwd("/Users/lily2019e/Dropbox/Wu/Genome_New/Volcano plot/AC_FBgn")
